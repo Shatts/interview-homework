@@ -6,11 +6,10 @@ import {WarehouseItem} from "../../core/models/warehouseItem";
 import {ItemsMockService} from "./items.mock.service";
 
 @Component({
-  selector: 'app-items-list',
-  standalone: true,
-  imports: [CommonModule, ListItemComponent],
-  templateUrl: './items-list.component.html',
-  styleUrls: ['./items-list.component.scss']
+    selector: 'app-items-list',
+    imports: [CommonModule, ListItemComponent],
+    templateUrl: './items-list.component.html',
+    styleUrls: ['./items-list.component.scss']
 })
 export class ItemsListComponent  {
   items$: Observable<WarehouseItem[]> = this.itemsMockService.items

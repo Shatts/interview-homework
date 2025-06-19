@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import {WarehouseItem} from "../../../core/models/warehouseItem";
 
 @Component({
-  selector: 'app-list-item',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './list-item.component.html',
-  styleUrls: ['./list-item.component.scss']
+    selector: 'app-list-item',
+    imports: [CommonModule],
+    templateUrl: './list-item.component.html',
+    styleUrls: ['./list-item.component.scss']
 })
 export class ListItemComponent {
   @Input() item: WarehouseItem
