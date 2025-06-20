@@ -1,0 +1,80 @@
+<mat-toolbar class="warehouse-toolbar">Warehouse Products</mat-toolbar>
+<div class="mat-elevation-z2">
+  <div class="product-change-container">
+    <button matButton="elevated" (click)="addData()" class="product-button">
+      Add data
+    </button>
+  </div>
+ 
+  <table mat-table class="mat-elevation-z2 product-table" matSort aria-label="Elements">
+    <!-- Id Column -->
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Id</th>
+      <td mat-cell *matCellDef="let row">{{row.id}}</td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+      <td mat-cell *matCellDef="let row">{{row.name}}</td>
+    </ng-container>
+
+    <!-- Image Column -->
+    <ng-container matColumnDef="imageUrl">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Image</th>
+      <td mat-cell *matCellDef="let row">
+        <img [src]="row.imageUrl" alt="Image" class="image-cell" width="100" height="100">
+      </td>
+    </ng-container>
+
+    <!-- Description Column -->
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+      <td mat-cell *matCellDef="let row">{{row.description}}</td>
+    </ng-container>
+
+    <!-- Unit Price Column -->
+    <ng-container matColumnDef="unitPrice">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Unit Price</th>
+      <td mat-cell *matCellDef="let row">{{row.unitPrice}}</td>
+    </ng-container>
+
+    <!-- Quantity Column -->
+    <ng-container matColumnDef="quantity">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Quantity</th>
+      <td mat-cell *matCellDef="let row">{{row.quantity}}</td>
+    </ng-container>
+
+    <!-- Add to Shipment Column -->
+    <ng-container matColumnDef="addToShipment">
+      <th mat-header-cell *matHeaderCellDef>Add to Shipment</th>
+      <td mat-cell *matCellDef="let row">
+        <button matButton="outlined" (click)="addToShipment(row.id)">Basic</button>
+      </td>
+    </ng-container>
+
+     <!-- Actions -->
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <td mat-cell *matCellDef="let row">
+      @if (editingRowId === row.id) {
+        <button mat-button color="primary" (click)="saveRow()">Save</button>
+        <button mat-button (click)="cancelEdit()">Cancel</button>
+      } @else {
+        <button mat-stroked-button (click)="startEdit(row)">Edit</button>
+      }
+    </td>
+  </ng-container>
+    
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <mat-paginator #paginator
+      [length]="dataSource.data.length"
+      [pageIndex]="0"
+      [pageSize]="10"
+      [pageSizeOptions]="[5, 10, 20]"
+      aria-label="Select page">
+  </mat-paginator>
+</div>
