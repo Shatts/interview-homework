@@ -3,16 +3,21 @@ import { environment } from './environments/environment';
 import { AppComponent } from './app/app.component';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { ProductTableComponent } from './app/pages/product-table/product-table.component';
 
 if (environment.production) {
   enableProdMode();
 }
 
 const routes = [
-  { path: '', component: ProductTableComponent },
+  {
+    path: '',
+    loadComponent: () =>
+      import(
+        './app/warehouse-stock/product-table/product-table.component'
+      ).then(m => m.ProductTableComponent),
+  },
 ];
 
 bootstrapApplication(AppComponent, {
-  providers: [provideRouter(routes)]
+  providers: [provideRouter(routes)],
 }).catch(err => console.error(err));

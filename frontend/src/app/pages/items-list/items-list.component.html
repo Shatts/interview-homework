@@ -1,8 +1,0 @@
-<div class="items-list">
-  @for (item of items$ | async; track item) {
-    <app-list-item
-      [item]="item"
-      (addToShipment)="addItemToShipment(item.id)">
-    </app-list-item>
-  }
-</div>

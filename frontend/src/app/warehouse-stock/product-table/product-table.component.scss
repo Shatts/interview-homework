@@ -1,0 +1,137 @@
+.warehouse-toolbar {
+  justify-content: center;
+  background-color: white;
+}
+
+.product-table {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  table-layout: fixed;
+}
+
+.mat-header-cell,
+.mat-cell {
+  padding: 16px;
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.mat-header-cell {
+  font-weight: 600;
+  color: #424242;
+  background-color: #f9f9f9;
+}
+
+.mat-row:hover {
+  background-color: #f1f1f1;
+}
+
+.mat-elevation-z2 {
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.product-change-container {
+  padding: 16px;
+}
+
+.actions-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.mat-row,
+.mat-header-row {
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+}
+
+.mat-cell,
+.mat-header-cell {
+  vertical-align: middle;
+  font-size: 14px;
+  line-height: 1.4;
+  padding-top: 0;
+  padding-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+mat-form-field,
+input[matInput] {
+  max-width: 100%;
+}
+
+mat-form-field {
+  min-width: 0 !important;
+  width: 100%;
+  margin: 0;
+  .mat-form-field-wrapper {
+    padding-bottom: 0;
+  }
+  .mat-form-field-flex {
+    min-height: 32px;
+    align-items: center;
+  }
+  .mat-form-field-infix {
+    padding: 0;
+    border-top: 0;
+    min-height: 0;
+  }
+  .mat-form-field-label-wrapper {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .mat-form-field-underline {
+    display: none;
+  }
+}
+
+input[matInput] {
+  width: 100%;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.mat-error {
+  font-size: 12px;
+  line-height: 1.2;
+  margin-top: 2px;
+  min-height: 0;
+  padding: 0;
+  display: none;
+}
+
+mat-form-field.ng-invalid.ng-touched .mat-error {
+  display: block;
+}
+
+.mat-row.editing {
+  background-color: #f5faff;
+}
+
+th.mat-column-id {
+  width: 60px;
+}
+
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: white;
+}
+
+@media (max-width: 768px) {
+  .product-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
