@@ -1,0 +1,41 @@
+.add-product-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 32px 24px 24px 24px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1.5px 4px rgba(0, 0, 0, 0.04);
+  min-width: 340px;
+}
+
+h2[mat-dialog-title] {
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #222;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+[mat-dialog-actions] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+button[mat-flat-button] {
+  min-width: 90px;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+button[mat-button] {
+  border-radius: 8px;
+}

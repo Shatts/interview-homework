@@ -1,0 +1,75 @@
+<h2 mat-dialog-title>Add Product</h2>
+<form [formGroup]="form" (ngSubmit)="submit()" class="add-product-dialog">
+  <mat-form-field appearance="outline">
+    <mat-label>Name</mat-label>
+    <input
+      matInput
+      autocomplete="off"
+      placeholder="Name"
+      formControlName="name"
+      required />
+    @if (form.get('name')?.hasError('required')) {
+      <mat-error>Name is required</mat-error>
+    }
+    @if (form.get('name')?.hasError('maxlength')) {
+      <mat-error>Name cannot be longer than 50 characters</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Description</mat-label>
+    <input
+      matInput
+      autocomplete="off"
+      placeholder="Description"
+      formControlName="description"
+      required />
+    @if (form.get('description')?.hasError('required')) {
+      <mat-error>Description is required</mat-error>
+    }
+    @if (form.get('description')?.hasError('maxlength')) {
+      <mat-error>Description cannot be longer than 200 characters</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Quantity</mat-label>
+    <input
+      matInput
+      type="number"
+      placeholder="Quantity"
+      formControlName="quantity"
+      autocomplete="off"
+      required />
+    @if (form.get('quantity')?.hasError('required')) {
+      <mat-error>Quantity is required</mat-error>
+    }
+    @if (form.get('quantity')?.hasError('min')) {
+      <mat-error>Quantity must be at least 1</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Unit Price</mat-label>
+    <input
+      matInput
+      type="number"
+      placeholder="Unit Price"
+      formControlName="unitPrice"
+      autocomplete="off"
+      required />
+    @if (form.get('unitPrice')?.hasError('required')) {
+      <mat-error>Unit price is required</mat-error>
+    }
+    @if (form.get('unitPrice')?.hasError('min')) {
+      <mat-error>Unit price must be at least 1</mat-error>
+    }
+  </mat-form-field>
+  <div mat-dialog-actions>
+    <button mat-button type="button" (click)="dialogRef.close()">Cancel</button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      [disabled]="form.invalid">
+      Add
+    </button>
+  </div>
+</form>

@@ -1,0 +1,184 @@
+<mat-toolbar class="warehouse-toolbar">Warehouse Products</mat-toolbar>
+<div class="mat-elevation-z2">
+  <div class="product-change-container">
+    <button matFab extended (click)="addProduct()">
+      <mat-icon>add</mat-icon>
+      Add data
+    </button>
+  </div>
+
+  <table
+    mat-table
+    class="mat-elevation-z2 product-table"
+    matSort
+    aria-label="Elements"
+    [trackBy]="trackById">
+    <!-- Id Column -->
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Id</th>
+      <td mat-cell *matCellDef="let row">{{ row.id }}</td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        @if (editingRowId === product.id) {
+          <mat-form-field appearance="fill">
+            <input matInput [formControl]="getControl(product.id, 'name')" />
+            <mat-error
+              *ngIf="getControl(product.id, 'name').hasError('required')">
+              Name is required
+            </mat-error>
+            <mat-error
+              *ngIf="getControl(product.id, 'name').hasError('maxlength')">
+              Name cannot be longer than 50 characters
+            </mat-error>
+          </mat-form-field>
+        } @else {
+          {{ product.name }}
+        }
+      </td>
+    </ng-container>
+
+    <!-- Image Column -->
+    <ng-container matColumnDef="imageUrl">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Image</th>
+      <td mat-cell *matCellDef="let row">
+        <img
+          [src]="row.imageUrl"
+          alt="Image of {{ row.name }}"
+          class="image-cell"
+          width="100"
+          height="100" />
+      </td>
+    </ng-container>
+
+    <!-- Description Column -->
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        @if (editingRowId === product.id) {
+          <mat-form-field appearance="fill">
+            <input
+              matInput
+              [formControl]="getControl(product.id, 'description')" />
+            <mat-error
+              *ngIf="
+                getControl(product.id, 'description').hasError('required')
+              ">
+              Description is required
+            </mat-error>
+            <mat-error
+              *ngIf="
+                getControl(product.id, 'description').hasError('maxlength')
+              ">
+              Description cannot be longer than 200 characters
+            </mat-error>
+          </mat-form-field>
+        } @else {
+          {{ product.description }}
+        }
+      </td>
+    </ng-container>
+
+    <!-- Unit Price Column -->
+    <ng-container matColumnDef="unitPrice">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Unit Price</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        @if (editingRowId === product.id) {
+          <mat-form-field appearance="fill">
+            <input
+              type="number"
+              matInput
+              [formControl]="getControl(product.id, 'unitPrice')" />
+            <mat-error
+              *ngIf="getControl(product.id, 'unitPrice').hasError('required')">
+              Unit price is required
+            </mat-error>
+            <mat-error
+              *ngIf="getControl(product.id, 'unitPrice').hasError('min')">
+              Unit price must be at least 0
+            </mat-error>
+          </mat-form-field>
+        } @else {
+          {{ product.unitPrice }}
+        }
+      </td>
+    </ng-container>
+
+    <!-- Quantity Column -->
+    <ng-container matColumnDef="quantity">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Quantity</th>
+      <td mat-cell *matCellDef="let product; let i = index">
+        @if (editingRowId === product.id) {
+          <mat-form-field appearance="fill">
+            <input
+              type="number"
+              matInput
+              [formControl]="getControl(product.id, 'quantity')" />
+            <mat-error
+              *ngIf="getControl(product.id, 'quantity').hasError('required')">
+              Quantity is required
+            </mat-error>
+            <mat-error
+              *ngIf="getControl(product.id, 'quantity').hasError('min')">
+              Quantity must be at least 0
+            </mat-error>
+          </mat-form-field>
+        } @else {
+          {{ product.quantity }}
+        }
+      </td>
+    </ng-container>
+
+    <!-- Actions -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let product">
+        <div class="actions-buttons">
+          @if (editingRowId === product.id) {
+            <button
+              mat-button
+              aria-label="Save changes to product"
+              (click)="save(product)">
+              Save
+            </button>
+            <button mat-button (click)="cancelEdit()">Cancel</button>
+          } @else {
+            <button
+              mat-icon-button
+              aria-label="Edit product"
+              (click)="startEdit(product.id)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              aria-label="Delete product"
+              (click)="removeProduct(product)">
+              <mat-icon>delete</mat-icon>
+            </button>
+            <!-- <button mat-stroked-button color="warn" (click)="remove(product)">
+            Add to shipment
+          </button> -->
+          }
+        </div>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      [class.editing]="editingRowId === row.id"></tr>
+  </table>
+
+  <mat-paginator
+    #paginator
+    [length]="dataSource.data.length"
+    [pageIndex]="0"
+    [pageSize]="10"
+    [pageSizeOptions]="[5, 10, 20]"
+    aria-label="Select page">
+  </mat-paginator>
+</div>
