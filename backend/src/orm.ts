@@ -3,7 +3,7 @@ import { defineConfig } from '@mikro-orm/mariadb';
 import { Product } from './entities/ProductEntity.js';
 import { dbEnv } from './config/dbEnv.js';
 import { Seeder, SeedManager } from '@mikro-orm/seeder';
-import { DatabaseSeeder } from '#seeders/DatabaseSeeder.js';
+import { DatabaseSeeder } from './seeders/DatabaseSeeder.js';
 
 export default defineConfig({
   entities: [Product],

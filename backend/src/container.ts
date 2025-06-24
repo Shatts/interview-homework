@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { TYPES } from '#types/ContainerDependencies.js';
+import { TYPES } from './types/ContainerDependencies.js';
 import { Container } from 'inversify';
 import { EntityManager } from '@mikro-orm/core';
 import { orm } from './orm.js';

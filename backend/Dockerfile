@@ -1,20 +1,27 @@
-# Use official Node.js LTS image
-FROM node:20-alpine AS base
+# Stage 1: Install dependencies and build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# Stage 2: Production image
+FROM node:20-alpine AS prod
+
+WORKDIR /app
+
 COPY package*.json ./
 RUN npm install --production
 
-# Copy source code
-COPY . .
+# Only copy the built output and necessary files
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/.env ./
+# (copy any other needed files, e.g., migrations, public, etc.)
 
-# Build the project
-RUN npm run build
-
-# Expose the port the app runs on
 EXPOSE 3000
 
-# Start the server
-CMD ["node", "dist/server.js"] 
+CMD ["node", "dist/server.js"]

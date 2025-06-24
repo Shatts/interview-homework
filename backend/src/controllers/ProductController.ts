@@ -47,14 +47,18 @@ export class ProductController {
     @requestParam('id') id: number,
     @response() res: TypedResponse<{ message: string }>,
   ): Promise<void> {
-    const success = await this.productService.delete(id);
+    await this.productService.delete(id);
     //if (!success) return res.status(404).json({ message: 'Product not found' });
     res.status(204).json({ message: 'Deleted' });
   }
 
   @httpGet('/')
   async getAll(@response() res: TypedResponse<Product[]>): Promise<void> {
-    const products = await this.productService.getAll();
+    const products = await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(this.productService.getAll());
+      }, 2000)
+    });
     res.json(products);
   }
 
@@ -64,8 +68,11 @@ export class ProductController {
     @response() res: TypedResponse<Product>,
   ): Promise<void> {
     const product = await this.productService.getById(id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json(product);
+    if (!product) {
+      res.status(404).json({ message: 'Product not found' });
+    } else {
+      res.json(product);
+    }
   }
 
   @httpPatch(
@@ -79,8 +86,11 @@ export class ProductController {
     @response() res: TypedResponse<Product>,
   ): Promise<void> {
     const updated = await this.productService.update(id, req.body);
-    if (!updated) return res.status(404).json({ message: 'Product not found' });
-    res.json(updated);
+    if (!updated) {
+      res.status(404).json({ message: 'Product not found' });
+    } else {
+      res.json(updated);
+    }
   }
 
   @httpPut(
@@ -94,7 +104,10 @@ export class ProductController {
     @response() res: TypedResponse<Product>,
   ): Promise<void> {
     const product = await this.productService.update(id, req.body);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json(product);
+    if (!product) {
+       res.status(404).json({ message: 'Product not found' });
+    } else {
+      res.json(product);
+    }
   }
 }

@@ -1,12 +1,17 @@
 import { inject, injectable } from 'inversify';
 import { ProductRepository } from '../repositories/ProductRepository.js';
-import { Product, ProductCreateInput, ProductUpdateInput } from '../types/Product.js';
-import { TYPES } from '#container.js';
+import {
+  Product,
+  ProductCreateInput,
+  ProductUpdateInput,
+} from '../types/Product.js';
+import { TYPES } from '../container.js';
 
 @injectable()
 export class ProductService {
   constructor(
-    @inject(TYPES.ProductRepository) private productRepository: ProductRepository,
+    @inject(TYPES.ProductRepository)
+    private productRepository: ProductRepository,
   ) {}
 
   async getAll(): Promise<Product[]> {

@@ -2,8 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 
 import { BaseError } from '../types/errors/BaseError.js';
 
-export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
-  console.log(res, 'response');
+export function errorHandler(
+  err: unknown,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   if (res.headersSent) {
     next(err);
   }
