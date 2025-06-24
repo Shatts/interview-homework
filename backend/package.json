@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "dist/app.js",
+  "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx --watch --env-file .env src/app.ts",
-    "start": "node --env-file .env dist/app.js",
+    "dev": "tsx --watch --env-file .env src/server.ts",
+    "start": "node --env-file .env dist/server.js",
     "build": "tsc",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
@@ -17,16 +17,27 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@mikro-orm/core": "^6.4.16",
+    "@mikro-orm/mariadb": "^6.4.16",
+    "@mikro-orm/reflection": "^6.4.16",
+    "@mikro-orm/seeder": "^6.4.16",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
-    "express": "~4.16.1",
-    "morgan": "~1.9.1"
+    "express": "^4.21.2",
+    "inversify": "^6.0.3",
+    "inversify-express-utils": "^6.5.0",
+    "mariadb": "^3.4.2",
+    "morgan": "~1.9.1",
+    "reflect-metadata": "^0.2.2",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@mikro-orm/cli": "^6.4.16",
     "@tsconfig/node22": "^22.0.2",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
+    "@types/inversify": "^2.0.32",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.0.3",
     "eslint": "^9.29.0",
