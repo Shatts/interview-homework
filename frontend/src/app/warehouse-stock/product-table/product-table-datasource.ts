@@ -1,270 +1,109 @@
 import { DataSource } from '@angular/cdk/collections';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { map } from 'rxjs/operators';
-import { Observable, merge, BehaviorSubject } from 'rxjs';
+import { map, shareReplay, tap } from 'rxjs/operators';
+import { Observable, merge, of, Subject, BehaviorSubject } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
+import { ProductTableItem } from './product.model';
+import { inject } from '@angular/core';
+import { ProductTableService } from './product-table.service';
 
-// TODO: Replace this with your own data model type
-export interface ProductTableItem {
-  id: number;
-  imageUrl: string;
-  name: string;
-  description: string;
-  quantity: number;
-  unitPrice: number;
-}
-
-// TODO: replace this with real data from your application
-const EXAMPLE_DATA: ProductTableItem[] = [
-  {
-    id: 1,
-    name: 'Hydrogen',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A gas',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 2,
-    name: 'Helium',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A gas',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 3,
-    name: 'Lithium',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 4,
-    name: 'Beryllium',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 5,
-    name: 'Boron',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 6,
-    name: 'Carbon',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A non-metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 7,
-    name: 'Nitrogen',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A gas',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 8,
-    name: 'Oxygen',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A gas',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 9,
-    name: 'Fluorine',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A gas',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 10,
-    name: 'Neon',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A gas',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 11,
-    name: 'Sodium',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 12,
-    name: 'Magnesium',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 13,
-    name: 'Aluminum',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 14,
-    name: 'Silicon',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A non-metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 15,
-    name: 'Phosphorus',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A non-metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 16,
-    name: 'Sulfur',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A non-metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 17,
-    name: 'Chlorine',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A gas',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 18,
-    name: 'Argon',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A gas',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 19,
-    name: 'Potassium',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-  {
-    id: 20,
-    name: 'Calcium',
-    imageUrl: 'assets/logo_black.svg',
-    description: 'A metal',
-    quantity: 100,
-    unitPrice: 100,
-  },
-];
-
-/**
- * Data source for the ProductTable view. This class should
- * encapsulate all logic for fetching and manipulating the displayed data
- * (including sorting, pagination, and filtering).
- */
 export class ProductTableDataSource extends DataSource<ProductTableItem> {
-  private _data = new BehaviorSubject<ProductTableItem[]>(EXAMPLE_DATA);
-  paginator: MatPaginator | undefined;
-  sort: MatSort | undefined;
+  paginator?: MatPaginator;
+  sort?: MatSort;
+  total$ = new Subject<number>();
+  refresh$ = new BehaviorSubject<void>(undefined);
+  loading$ = new BehaviorSubject<boolean>(false);
+  private dataSubject = new BehaviorSubject<ProductTableItem[]>([]);
+  private localData: ProductTableItem[] = [];
+  private productTableService = inject(ProductTableService);
 
-  constructor() {
-    super();
-  }
-
-  get data(): ProductTableItem[] {
-    return this._data.value;
-  }
-
-  setData(data: ProductTableItem[]) {
-    this._data.next(data);
-  }
-
-  /**
-   * Connect this data source to the table. The table will only update when
-   * the returned stream emits new items.
-   * @returns A stream of the items to be rendered.
-   */
   connect(): Observable<ProductTableItem[]> {
-    if (this.paginator && this.sort) {
-      // Merge the data subject so updates are emitted
-      return merge(this._data, this.paginator.page, this.sort.sortChange).pipe(
-        map(() => {
-          return this.getPagedData(this.getSortedData([...this.data]));
-        })
-      );
-    } else {
-      throw Error(
-        'Please set the paginator and sort on the data source before connecting.'
-      );
-    }
+    merge(
+      this.paginator ? this.paginator.page : of({}),
+      this.sort ? this.sort.sortChange : of({}),
+      this.refresh$
+    )
+      .pipe(
+        tap(() => this.loading$.next(true)),
+        switchMap(() =>
+          this.productTableService.getProducts().pipe(catchError(() => of([])))
+        ),
+        tap(data => {
+          this.setData(data);
+          // initialize forms here, once per fetch:
+          this.productTableService.initializeForms(data);
+          this.loading$.next(false);
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
+      )
+      .subscribe();
+
+    return this.dataSubject
+      .asObservable()
+      .pipe(map(d => this.getPagedData(this.getSortedData([...d]))));
   }
 
-  /**
-   *  Called when the table is being destroyed. Use this function, to clean up
-   * any open connections or free any held resources that were set up during connect.
-   */
   disconnect(): void {
-    console.log('disconnect');
+    this.dataSubject.complete();
+    this.total$.complete();
+    this.refresh$.complete();
+    this.loading$.complete();
   }
 
-  /**
-   * Paginate the data (client-side). If you're using server-side pagination,
-   * this would be replaced by requesting the appropriate data from the server.
-   */
   private getPagedData(data: ProductTableItem[]): ProductTableItem[] {
     if (this.paginator) {
       const startIndex = this.paginator.pageIndex * this.paginator.pageSize;
-      return data.splice(startIndex, this.paginator.pageSize);
-    } else {
-      return data;
+      return data.slice(startIndex, startIndex + this.paginator.pageSize);
     }
+    return data;
   }
 
-  /**
-   * Sort the data (client-side). If you're using server-side sorting,
-   * this would be replaced by requesting the appropriate data from the server.
-   */
   private getSortedData(data: ProductTableItem[]): ProductTableItem[] {
-    if (!this.sort || !this.sort.active || this.sort.direction === '') {
-      return data;
-    }
-
+    if (!this.sort?.active || this.sort.direction === '') return data;
+    const isAsc = this.sort.direction === 'asc';
     return data.sort((a, b) => {
-      const isAsc = this.sort?.direction === 'asc';
-      switch (this.sort?.active) {
+      switch (this.sort!.active) {
         case 'name':
           return compare(a.name, b.name, isAsc);
         case 'id':
           return compare(+a.id, +b.id, isAsc);
+        case 'quantity':
+          return compare(+a.quantity, +b.quantity, isAsc);
+        case 'unitPrice':
+          return compare(+a.unitPrice, +b.unitPrice, isAsc);
+        case 'description':
+          return compare(a.description, b.description, isAsc);
         default:
           return 0;
       }
     });
   }
+
+  private setData(data: ProductTableItem[]) {
+    this.localData = data;
+    this.dataSubject.next(this.localData);
+    this.total$.next(this.localData.length);
+  }
+
+  optimisticUpdate(id: number, update: Partial<ProductTableItem>) {
+    this.localData = this.localData.map(item =>
+      item.id === id ? { ...item, ...update } : item
+    );
+    this.setData(this.localData);
+  }
+
+  optimisticAdd(newItem: ProductTableItem) {
+    this.localData = [newItem, ...this.localData];
+    this.setData(this.localData);
+  }
+
+  optimisticDelete(id: number) {
+    this.localData = this.localData.filter(item => item.id !== id);
+    this.setData(this.localData);
+  }
 }
 
-/** Simple sort comparator for example ID/Name columns (for client-side sorting). */
 function compare(
   a: string | number,
   b: string | number,

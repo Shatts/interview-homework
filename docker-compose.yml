@@ -19,27 +19,25 @@ services:
     networks:
       - backend_net
 
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+    networks:
+      - backend_net
+    environment:
+      DB_HOST: mariadb
+
 volumes:
   mariadb_data:
 
 networks:
   backend_net:
     driver: bridge
-
-
-  # backend:
-  #   build: ./backend
-  #   env_file:
-  #     - ./backend/.env
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - mariadb
-  #   restart: unless-stopped
-  #   networks:
-  #     - backend_net
-  #   environment:
-  #     DB_HOST: mariadb
-#networks:
-#  backend_net:
-#    driver: bridge

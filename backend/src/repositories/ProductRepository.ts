@@ -1,6 +1,7 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Product } from '../entities/ProductEntity.js';
 import { injectable, inject } from 'inversify';
+import { ProductCreateInput } from '../types/Product.js';
 
 @injectable()
 export class ProductRepository {
@@ -14,7 +15,7 @@ export class ProductRepository {
     return this.em.findOne(Product, { id });
   }
 
-  async create(data: Partial<Product>): Promise<Product> {
+  async create(data: ProductCreateInput): Promise<Product> {
     const product = this.em.create(Product, data);
     await this.em.persistAndFlush(product);
     return product;

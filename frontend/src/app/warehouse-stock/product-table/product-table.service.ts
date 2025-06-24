@@ -1,13 +1,16 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import {
-  ProductTableDataSource,
-  ProductTableItem,
-} from './product-table-datasource';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { map, catchError, of } from 'rxjs';
+import { ProductTableItem } from './product.model';
+import { ApiConfig } from '../../core/config/api.config';
 
 @Injectable({ providedIn: 'root' })
 export class ProductTableService {
   private productsMap = new Map<number, FormGroup>();
+  private http = inject(HttpClient);
+  private apiConfig = inject(ApiConfig);
 
   createProductForm(product: ProductTableItem): FormGroup {
     return new FormGroup({
@@ -66,67 +69,45 @@ export class ProductTableService {
     return control;
   }
 
-  getControl(productId: number, name: keyof ProductTableItem): FormControl {
+  getControl(productId: number, name: string): FormControl {
     const form = this.productsMap.get(productId);
     if (!form) throw new Error(`Form not found for id: ${productId}`);
     return this.getFormControl(form, name);
   }
 
-  removeProduct(
-    dataSource: ProductTableDataSource,
-    productId: number
-  ): boolean {
-    const index = dataSource.data.findIndex(p => p.id === productId);
-    if (index > -1) {
-      const newData = [...dataSource.data];
-      newData.splice(index, 1);
-      dataSource.setData(newData);
-      this.productsMap.delete(productId);
-      return true;
-    }
-    return false;
+  removeProduct(productId: number): Observable<boolean> {
+    return this.http
+      .delete(this.apiConfig.buildUrl(`products/${productId}`), {
+        observe: 'response',
+      })
+      .pipe(
+        map(response => response.status === 204),
+        catchError(() => {
+          return of(false);
+        })
+      );
   }
 
-  generateNextId(data: ProductTableItem[]): number {
-    return data.length ? Math.max(...data.map(p => p.id)) + 1 : 1;
+  getProducts(): Observable<ProductTableItem[]> {
+    return this.http.get<ProductTableItem[]>(
+      this.apiConfig.buildUrl('products')
+    );
   }
 
-  addProduct(
-    dataSource: ProductTableDataSource,
-    newProductData: Partial<ProductTableItem>
-  ): void {
-    const newProduct: ProductTableItem = {
-      ...newProductData,
-      id: this.generateNextId(dataSource.data),
-      imageUrl: 'assets/logo_black.svg',
-    } as ProductTableItem;
-
-    const updatedData = [...dataSource.data, newProduct];
-    dataSource.setData(updatedData);
-    this.productsMap.set(newProduct.id, this.createProductForm(newProduct));
+  addProduct(product: Partial<ProductTableItem>): Observable<ProductTableItem> {
+    return this.http.post<ProductTableItem>(
+      this.apiConfig.buildUrl('products'),
+      product
+    );
   }
 
-  saveProduct(
-    dataSource: ProductTableDataSource,
-    product: ProductTableItem
-  ): boolean {
-    const form = this.productsMap.get(product.id);
-    if (!form || !form.valid) return false;
-
-    const updatedProduct: ProductTableItem = {
-      ...product,
-      ...form.getRawValue(),
-    };
-
-    const index = dataSource.data.findIndex(p => p.id === product.id);
-    if (index === -1) return false;
-
-    const updatedData = [...dataSource.data];
-    updatedData[index] = updatedProduct;
-
-    dataSource.setData(updatedData);
-    this.productsMap.get(product.id)?.patchValue(updatedProduct);
-
-    return true;
+  updateProductPartial(
+    productId: number,
+    update: Partial<ProductTableItem>
+  ): Observable<ProductTableItem> {
+    return this.http.patch<ProductTableItem>(
+      this.apiConfig.buildUrl(`products/${productId}`),
+      update
+    );
   }
 }

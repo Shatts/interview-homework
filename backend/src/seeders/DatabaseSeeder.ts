@@ -1,5 +1,6 @@
 import { Seeder } from '@mikro-orm/seeder';
 import { Product } from '../entities/ProductEntity.js';
+import { EntityManager } from '@mikro-orm/core';
 
 export class DatabaseSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {

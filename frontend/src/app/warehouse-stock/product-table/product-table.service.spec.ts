@@ -1,30 +1,24 @@
 import { TestBed } from '@angular/core/testing';
 import { ProductTableService } from './product-table.service';
 import { FormGroup } from '@angular/forms';
+import { ProductTableItem } from './product.model';
 import {
-  ProductTableDataSource,
-  ProductTableItem,
-} from './product-table-datasource';
-
-// class MockDataSource extends ProductTableDataSource {
-//   private _data: ProductTableItem[] = [];
-//   override get data() {
-//     return this._data;
-//   }
-//   override setData(data: ProductTableItem[]) {
-//     this._data = data;
-//   }
-// }
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('ProductTableService', () => {
   let service: ProductTableService;
-  let dataSource: ProductTableDataSource;
+  let httpMock: HttpTestingController;
   let product: ProductTableItem;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(ProductTableService);
-    dataSource = new ProductTableDataSource();
+    httpMock = TestBed.inject(HttpTestingController);
     product = {
       id: 1,
       name: 'Test',
@@ -33,6 +27,10 @@ describe('ProductTableService', () => {
       quantity: 2,
       unitPrice: 3,
     };
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should create a valid product form', () => {
@@ -87,63 +85,63 @@ describe('ProductTableService', () => {
     expect(() => service.getControl(999, 'name')).toThrow();
   });
 
-  it('should update datasource and productMap if new product was added', () => {
-    dataSource.setData([]);
-
-    service.addProduct(dataSource, {
+  it('should add a product via POST', () => {
+    const newProduct = {
       name: 'New',
       description: 'desc',
       quantity: 1,
       unitPrice: 1,
+    };
+    const returnedProduct = { ...newProduct, id: 2, imageUrl: '' };
+    service.addProduct(newProduct).subscribe(result => {
+      expect(result).toEqual(returnedProduct);
     });
-
-    expect(dataSource.data.length).toBe(1);
-    expect(service.getForm(1)).toBeTruthy();
+    const req = httpMock.expectOne('http://localhost:3000/products');
+    expect(req.request.method).toBe('POST');
+    req.flush(returnedProduct);
   });
 
-  describe('removeProduct()', () => {
-    it('should return false if product not found', () => {
-      dataSource.setData([]);
-      expect(service.removeProduct(dataSource, 999)).toBeFalse();
+  it('should get products via GET', () => {
+    const products = [product];
+    service.getProducts().subscribe(result => {
+      expect(result).toEqual(products);
     });
-
-    it('should remove product from datasource and productMap', () => {
-      dataSource.setData([product]);
-      service.initializeForms([product]);
-
-      const removed = service.removeProduct(dataSource, product.id);
-
-      expect(removed).toBeTrue();
-      expect(dataSource.data.length).toBe(0);
-      expect(service.getForm(product.id)).toBeUndefined();
-    });
+    const req = httpMock.expectOne('http://localhost:3000/products');
+    expect(req.request.method).toBe('GET');
+    req.flush(products);
   });
 
-  describe('saveProduct()', () => {
-    it('should update data and form when valid', () => {
-      dataSource.setData([product]);
-      service.initializeForms([product]);
-      const form = service.getForm(product.id)!;
-      form.patchValue({ name: 'Saved' });
-
-      expect(service.saveProduct(dataSource, product)).toBeTrue();
-      expect(dataSource.data[0].name).toBe('Saved');
-      expect(form.get('name')?.value).toBe('Saved');
+  it('should update a product via PATCH', () => {
+    const update = { name: 'Updated' };
+    service.updateProductPartial(product.id, update).subscribe(result => {
+      expect(result).toEqual({ ...product, ...update });
     });
+    const req = httpMock.expectOne(
+      `http://localhost:3000/products/${product.id}`
+    );
+    expect(req.request.method).toBe('PATCH');
+    req.flush({ ...product, ...update });
+  });
 
-    it('should return false if form invalid', () => {
-      dataSource.setData([product]);
-      service.initializeForms([product]);
-      const form = service.getForm(product.id)!;
-      form.get('name')?.setValue('');
-
-      expect(service.saveProduct(dataSource, product)).toBeFalse();
+  it('should remove a product via DELETE', () => {
+    service.removeProduct(product.id).subscribe(result => {
+      expect(result).toBeTrue();
     });
+    const req = httpMock.expectOne(
+      `http://localhost:3000/products/${product.id}`
+    );
+    expect(req.request.method).toBe('DELETE');
+    req.flush({}, { status: 204, statusText: 'No Content' });
+  });
 
-    it('should return false if product not found', () => {
-      dataSource.setData([]);
-
-      expect(service.saveProduct(dataSource, product)).toBeFalse();
+  it('should return false if removeProduct fails', () => {
+    service.removeProduct(product.id).subscribe(result => {
+      expect(result).toBeFalse();
     });
+    const req = httpMock.expectOne(
+      `http://localhost:3000/products/${product.id}`
+    );
+    expect(req.request.method).toBe('DELETE');
+    req.flush({}, { status: 500, statusText: 'Server Error' });
   });
 });

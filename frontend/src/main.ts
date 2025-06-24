@@ -3,6 +3,7 @@ import { environment } from './environments/environment';
 import { AppComponent } from './app/app.component';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 
 if (environment.production) {
   enableProdMode();
@@ -19,5 +20,5 @@ const routes = [
 ];
 
 bootstrapApplication(AppComponent, {
-  providers: [provideRouter(routes)],
+  providers: [provideRouter(routes), provideHttpClient(withFetch())],
 }).catch(err => console.error(err));

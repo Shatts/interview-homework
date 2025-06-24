@@ -4,7 +4,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { AddProductDialogComponent } from '../add-product-dialog/add-product-dialog.component';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { ProductTableItem } from '../../product-table/product-table-datasource';
+import { ProductTableItem } from '../../product-table/product.model';
 
 describe('DialogService', () => {
   let service: DialogService;

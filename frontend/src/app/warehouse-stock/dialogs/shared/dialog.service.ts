@@ -2,8 +2,8 @@ import { inject, Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { AddProductDialogComponent } from '../add-product-dialog/add-product-dialog.component';
-import { ProductTableItem } from '../../product-table/product-table-datasource';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ProductTableItem } from '../../product-table/product.model';
 
 @Injectable({ providedIn: 'root' })
 export class DialogService {

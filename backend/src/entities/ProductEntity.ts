@@ -9,7 +9,7 @@ export class Product {
   name!: string;
 
   @Property({ type: 'string' })
-  description: string;
+  description!: string;
 
   @Property({ nullable: true, type: 'string' })
   imageUrl?: string;
