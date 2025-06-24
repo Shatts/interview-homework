@@ -1,4 +1,4 @@
-export interface WarehouseItem {
+export interface ProductTableItem {
   imageUrl: string;
   id: number;
   name: string;

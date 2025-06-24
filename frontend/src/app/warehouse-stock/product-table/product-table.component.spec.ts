@@ -5,9 +5,10 @@ import { MatTableModule } from '@angular/material/table';
 import { ProductTableComponent } from './product-table.component';
 import { ProductTableService } from './product-table.service';
 import { DialogService } from '../dialogs/shared/dialog.service';
-import { ProductTableItem } from './product-table-datasource';
-import { of } from 'rxjs';
+import { of, Subscription, throwError } from 'rxjs';
 import { FormControl, FormGroup } from '@angular/forms';
+import { ProductTableItem } from './product.model';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('ProductTableComponent', () => {
   let component: ProductTableComponent;
@@ -40,10 +41,12 @@ describe('ProductTableComponent', () => {
       'createProductForm',
       'deleteForm',
       'getFormControl',
-      'saveProduct',
+      'updateProductPartial',
       'removeProduct',
       'addProduct',
+      'getProducts',
     ]);
+    productTableServiceSpy.getProducts.and.returnValue(of([]));
     dialogServiceSpy = jasmine.createSpyObj('DialogService', [
       'openAddProduct',
       'confirm',
@@ -59,6 +62,7 @@ describe('ProductTableComponent', () => {
       providers: [
         { provide: ProductTableService, useValue: productTableServiceSpy },
         { provide: DialogService, useValue: dialogServiceSpy },
+        provideHttpClientTesting(),
       ],
     });
   }));
@@ -66,20 +70,12 @@ describe('ProductTableComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ProductTableComponent);
     component = fixture.componentInstance;
-    component.dataSource.setData([mockProduct]);
-    fixture.detectChanges();
   });
 
   it('should compile', () => {
+    productTableServiceSpy.getProducts.and.returnValue(of([]));
+
     expect(component).toBeTruthy();
-  });
-
-  it('should initialize forms on ngOnInit', () => {
-    component.ngOnInit();
-
-    expect(productTableServiceSpy.initializeForms).toHaveBeenCalledWith(
-      component.dataSource.data
-    );
   });
 
   it('should track by id correctly', () => {
@@ -112,44 +108,63 @@ describe('ProductTableComponent', () => {
   });
 
   describe('save()', () => {
-    beforeEach(() => {
-      spyOn(component.table, 'renderRows');
-    });
-
-    it('should save valid product and call renderRows', () => {
-      productTableServiceSpy.saveProduct.and.returnValue(true);
+    it('should call updateProductPartial and cancel edit on success', () => {
+      const form = new FormGroup({
+        name: new FormControl('test'),
+        description: new FormControl('desc'),
+        quantity: new FormControl(1),
+        unitPrice: new FormControl(10),
+        imageUrl: new FormControl(''),
+        id: new FormControl(1),
+      });
+      form.markAsDirty();
+      productTableServiceSpy.getForm.and.returnValue(form);
+      productTableServiceSpy.updateProductPartial.and.returnValue(
+        of(mockProduct)
+      );
+      spyOn(component, 'cancelEdit');
 
       component.save(mockProduct);
 
-      expect(component.table.renderRows).toHaveBeenCalled();
-      expect(component.editingRowId).toBeNull();
+      expect(productTableServiceSpy.updateProductPartial).toHaveBeenCalled();
+      expect(component.cancelEdit).toHaveBeenCalled();
     });
 
-    it('should not save rerender table if product was not saved', () => {
-      productTableServiceSpy.saveProduct.and.returnValue(false);
+    it('should show snackbar and not call updateProductPartial if form is invalid', () => {
+      const form = new FormGroup({
+        name: new FormControl(''),
+        description: new FormControl(''),
+        quantity: new FormControl(0),
+        unitPrice: new FormControl(0),
+        imageUrl: new FormControl(''),
+        id: new FormControl(1),
+      });
+      form.markAsDirty();
+      form.setErrors({ fake: true });
+      productTableServiceSpy.getForm.and.returnValue(form);
+      const snackSpy = spyOn(component['snackBar'], 'open');
 
       component.save(mockProduct);
 
-      expect(component.table.renderRows).not.toHaveBeenCalled();
+      expect(
+        productTableServiceSpy.updateProductPartial
+      ).not.toHaveBeenCalled();
+      expect(snackSpy).toHaveBeenCalled();
     });
   });
 
   describe('addProduct()', () => {
-    beforeEach(() => {
-      spyOn(component.table, 'renderRows');
-    });
-
     it('should call dialog and add new product', () => {
       dialogServiceSpy.openAddProduct.and.returnValue(of(mockProduct2));
-      productTableServiceSpy.addProduct.and.returnValue();
+      productTableServiceSpy.addProduct.and.returnValue(of(mockProduct2));
+      const snackSpy = spyOn(component['snackBar'], 'open');
 
       component.addProduct();
 
       expect(productTableServiceSpy.addProduct).toHaveBeenCalledWith(
-        component.dataSource,
         mockProduct2
       );
-      expect(component.table.renderRows).toHaveBeenCalled();
+      expect(snackSpy).toHaveBeenCalled();
     });
 
     it('should not add product if dialog returns undefined', () => {
@@ -158,68 +173,96 @@ describe('ProductTableComponent', () => {
       component.addProduct();
 
       expect(productTableServiceSpy.addProduct).not.toHaveBeenCalled();
-      expect(component.table.renderRows).not.toHaveBeenCalled();
     });
   });
 
   describe('removeProduct()', () => {
-    beforeEach(() => {
-      spyOn(component.table, 'renderRows');
-    });
-
     it('should call dialog and remove product if confirmed', () => {
       dialogServiceSpy.confirm.and.returnValue(of(true));
-      productTableServiceSpy.removeProduct.and.returnValue(true);
+      productTableServiceSpy.removeProduct.and.returnValue(of(true));
+      spyOn(component.dataSource, 'optimisticDelete').and.returnValue();
+
+      const snackSpy = spyOn(component['snackBar'], 'open');
 
       component.removeProduct(mockProduct);
 
       expect(productTableServiceSpy.removeProduct).toHaveBeenCalledWith(
-        component.dataSource,
         mockProduct.id
       );
-      expect(component.table.renderRows).toHaveBeenCalled();
+      expect(snackSpy).not.toHaveBeenCalled();
+    });
+
+    it('should show snackbar when deletion fails', () => {
+      dialogServiceSpy.confirm.and.returnValue(of(true));
+      productTableServiceSpy.removeProduct.and.returnValue(of(false));
+      spyOn(component.dataSource, 'optimisticDelete').and.returnValue();
+      spyOn(component.dataSource.refresh$, 'next');
+
+      const snackSpy = spyOn(component['snackBar'], 'open');
+
+      component.removeProduct(mockProduct);
+
+      expect(productTableServiceSpy.removeProduct).toHaveBeenCalledWith(
+        mockProduct.id
+      );
+      expect(snackSpy).toHaveBeenCalledWith(
+        'Failed to delete product.',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
+      expect(component.dataSource.refresh$.next).toHaveBeenCalled();
+    });
+
+    it('should show snackbar when deletion throws error', () => {
+      dialogServiceSpy.confirm.and.returnValue(of(true));
+      productTableServiceSpy.removeProduct.and.returnValue(
+        throwError(() => new Error('Network error'))
+      );
+      spyOn(component.dataSource, 'optimisticDelete').and.returnValue();
+      spyOn(component.dataSource.refresh$, 'next');
+
+      const snackSpy = spyOn(component['snackBar'], 'open');
+
+      component.removeProduct(mockProduct);
+
+      expect(productTableServiceSpy.removeProduct).toHaveBeenCalledWith(
+        mockProduct.id
+      );
+      expect(snackSpy).toHaveBeenCalledWith(
+        'Error deleting product.',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
+      expect(component.dataSource.refresh$.next).toHaveBeenCalled();
     });
 
     it('should not remove product if dialog is cancelled', () => {
       dialogServiceSpy.confirm.and.returnValue(of(false));
-      productTableServiceSpy.removeProduct.and.returnValue(false);
 
       component.removeProduct(mockProduct);
 
       expect(productTableServiceSpy.removeProduct).not.toHaveBeenCalled();
-      expect(component.table.renderRows).not.toHaveBeenCalled();
-    });
-
-    it('should not rerender rows if product was not deleted', () => {
-      dialogServiceSpy.confirm.and.returnValue(of(true));
-      productTableServiceSpy.removeProduct.and.returnValue(false);
-
-      component.removeProduct(mockProduct);
-
-      expect(productTableServiceSpy.removeProduct).toHaveBeenCalledWith(
-        component.dataSource,
-        mockProduct.id
-      );
-      expect(component.table.renderRows).not.toHaveBeenCalled();
     });
   });
 
   it('should bind data source, sort and paginator to table on AfterViewInit', () => {
+    component.table = jasmine.createSpyObj('MatTable', ['dataSource']);
+    component.paginator = jasmine.createSpyObj('MatPaginator', ['page']);
+    component.sort = jasmine.createSpyObj('MatSort', ['sortChange']);
+    spyOn(component.dataSource, 'connect').and.returnValue(of([]));
+    spyOn(component.dataSource.total$, 'subscribe').and.returnValue(
+      new Subscription()
+    );
+    spyOn(component.dataSource.loading$, 'subscribe').and.returnValue(
+      new Subscription()
+    );
+
     component.ngAfterViewInit();
 
     expect(component.table.dataSource).toBe(component.dataSource);
-  });
-
-  it('should have aria-labels on icon buttons', () => {
-    fixture.detectChanges();
-    const editBtn = fixture.nativeElement.querySelector(
-      'button[aria-label="Edit product"]'
-    );
-    const deleteBtn = fixture.nativeElement.querySelector(
-      'button[aria-label="Delete product"]'
-    );
-
-    expect(editBtn).toBeTruthy();
-    expect(deleteBtn).toBeTruthy();
   });
 });

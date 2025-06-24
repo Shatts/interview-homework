@@ -5,7 +5,6 @@ import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ConfirmDialogComponent', () => {
-  let component: ConfirmDialogComponent;
   let fixture: ComponentFixture<ConfirmDialogComponent>;
   let dialogRefSpy: jasmine.SpyObj<MatDialogRef<ConfirmDialogComponent>>;
 
@@ -26,7 +25,6 @@ describe('ConfirmDialogComponent', () => {
 
   function createComponent() {
     fixture = TestBed.createComponent(ConfirmDialogComponent);
-    component = fixture.componentInstance;
     fixture.detectChanges();
   }
 
