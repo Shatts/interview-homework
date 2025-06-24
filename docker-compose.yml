@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: mydatabase
+      MARIADB_USER: myuser
+      MARIADB_PASSWORD: mypass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: --bind-address=0.0.0.0
+    networks:
+      - backend_net
+
+volumes:
+  mariadb_data:
+
+networks:
+  backend_net:
+    driver: bridge
+
+
+  # backend:
+  #   build: ./backend
+  #   env_file:
+  #     - ./backend/.env
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - mariadb
+  #   restart: unless-stopped
+  #   networks:
+  #     - backend_net
+  #   environment:
+  #     DB_HOST: mariadb
+#networks:
+#  backend_net:
+#    driver: bridge
