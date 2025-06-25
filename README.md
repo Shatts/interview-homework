@@ -67,6 +67,7 @@ Good luck, and we look forward to seeing your work!
 
 - **Docker & Docker Compose** - For running the full stack
 - **Make** - For simplified command execution
+- **Angular CLI** - For frontend development (if not already installed)
 
 ### Installation & Setup
 

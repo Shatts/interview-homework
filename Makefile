@@ -15,7 +15,7 @@ help:
 
 up:
 	cp backend/.env.example backend/.env
-	docker-compose up -d
+	docker compose up -d
 	@echo "Starting frontend development server..."
 	cd frontend && ng serve --host 0.0.0.0 --port 4200
 
