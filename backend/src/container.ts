@@ -1,16 +1,23 @@
 import 'reflect-metadata';
-import { TYPES } from './types/ContainerDependencies.js';
-import { Container } from 'inversify';
 import { EntityManager } from '@mikro-orm/core';
-import { orm } from './orm.js';
-import { ProductService } from './services/ProductService.js';
-import { ProductRepository } from './repositories/ProductRepository.js';
+import { Container } from 'inversify';
 
-const container = new Container();
+import { orm } from './orm.js';
+import { ProductRepository } from './repositories/product-repository.js';
+import { ProductService } from './services/product-service.js';
+import { TYPES } from './types/container-dependencies.js';
+
+export const container = new Container();
 
 container
   .bind<EntityManager>(EntityManager)
-  .toDynamicValue(() => orm.em.fork())
+  .toDynamicValue(() => {
+    if (orm) {
+      return orm.em.fork();
+    } else {
+      throw new Error('ORM not initialized');
+    }
+  })
   .inRequestScope();
 container
   .bind<ProductService>(TYPES.ProductService)
@@ -21,4 +28,3 @@ container
   .to(ProductRepository)
   .inSingletonScope();
 
-export { container, TYPES };

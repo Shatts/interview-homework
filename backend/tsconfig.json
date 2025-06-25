@@ -8,6 +8,6 @@
     "esModuleInterop": true,
     "strictPropertyInitialization": false
   },
-  "include": ["**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["dist"]
 }

@@ -11,13 +11,12 @@ import {
   response,
 } from 'inversify-express-utils';
 
-import { TYPES } from '../container.js';
 import {
   zodValidateBody,
   zodValidateParams,
-} from '../middleware/zodValidate.js';
-import { ProductService } from '../services/ProductService.js';
-import { TypedRequestBody, TypedResponse } from '../types/Express.js';
+} from '../middlewares/zod-validator.js';
+import { ProductService } from '../services/product-service.js';
+import { TypedRequestBody, TypedResponse } from '../types/express-type.js';
 import {
   IdParamSchema,
   Product,
@@ -25,7 +24,8 @@ import {
   ProductCreateSchema,
   ProductUpdateInput,
   ProductUpdateSchema,
-} from '../types/Product.js';
+} from '../types/product-type.js';
+import { TYPES } from '../types/container-dependencies.js';
 
 @controller('/products')
 export class ProductController {
@@ -48,17 +48,13 @@ export class ProductController {
     @response() res: TypedResponse<{ message: string }>,
   ): Promise<void> {
     await this.productService.delete(id);
-    //if (!success) return res.status(404).json({ message: 'Product not found' });
     res.status(204).json({ message: 'Deleted' });
   }
 
   @httpGet('/')
   async getAll(@response() res: TypedResponse<Product[]>): Promise<void> {
-    const products = await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(this.productService.getAll());
-      }, 2000)
-    });
+    const products = await this.productService.getAll();
+    console.log(products, 'products');
     res.json(products);
   }
 
@@ -68,11 +64,7 @@ export class ProductController {
     @response() res: TypedResponse<Product>,
   ): Promise<void> {
     const product = await this.productService.getById(id);
-    if (!product) {
-      res.status(404).json({ message: 'Product not found' });
-    } else {
-      res.json(product);
-    }
+    res.json(product);
   }
 
   @httpPatch(
@@ -86,11 +78,7 @@ export class ProductController {
     @response() res: TypedResponse<Product>,
   ): Promise<void> {
     const updated = await this.productService.update(id, req.body);
-    if (!updated) {
-      res.status(404).json({ message: 'Product not found' });
-    } else {
-      res.json(updated);
-    }
+    res.json(updated);
   }
 
   @httpPut(
@@ -104,10 +92,6 @@ export class ProductController {
     @response() res: TypedResponse<Product>,
   ): Promise<void> {
     const product = await this.productService.update(id, req.body);
-    if (!product) {
-       res.status(404).json({ message: 'Product not found' });
-    } else {
-      res.json(product);
-    }
+    res.json(product);
   }
 }
