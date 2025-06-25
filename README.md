@@ -71,13 +71,33 @@ Good luck, and we look forward to seeing your work!
 
 ### Installation & Setup
 
-1. **Start the full stack**
+## Installation
+
+1. Install Docker & Docker Compose
+
+    macOS (with Homebrew)
+    ```bash
+    # Install Docker Desktop
+    brew install --cask docker
+    
+    # Launch Docker Desktop (first time)
+    open /Applications/Docker.app
+    
+    # Verify Docker and Compose
+    docker --version
+    docker compose version
+    ```
+2. Install Make (if not already installed)
+3. Install Angular CLI globally (if not already installed)
+   ```bash
+   npm install -g @angular/cli
+   ```
+4. Start the full stack
 
    ```bash
    make up
    ```
-
-2. **Access the applications**
+5. Access the applications
    - **Frontend**: http://localhost:4200
    - **Backend API**: http://localhost:3000
    - **Database**: MariaDB (configured via Docker)
