@@ -1,11 +1,12 @@
 import 'reflect-metadata';
-import { errorHandler } from '#middlewares/error-handler.js';
 import { RequestContext } from '@mikro-orm/core';
+import cors from 'cors';
 import express from 'express';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import morgan from 'morgan';
 
 import { container } from './container.js';
+import { errorHandler } from './middlewares/error-handler.js';
 import { initORM } from './orm.js';
 import './controllers/product-controller.js';
 
@@ -23,6 +24,11 @@ async function startServer(): Promise<void> {
       });
       app.use(morgan('dev'));
       app.use(express.json());
+      app.use(
+        cors({
+          origin: 'http://localhost:4200',
+        }),
+      );
     });
 
     server.setErrorConfig((app) => {

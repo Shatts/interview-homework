@@ -1,8 +1,7 @@
 DB_NAME ?= mydatabase
 DB_USER ?= myuser
 DB_PASSWORD ?= mypassword
-
-.PHONY: help up down build logs
+DB_ROOT_PASSWORD ?= rootpass
 
 help:
 	@echo "Available targets:"
@@ -15,13 +14,20 @@ help:
 	@echo "  DB_NAME, DB_USER, DB_PASSWORD (can be set in .env or overridden here)"
 
 up:
-	DB_NAME=$(DB_NAME) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) docker-compose up -d
+	cp backend/.env.example backend/.env
+	docker-compose up -d
+	@echo "Starting frontend development server..."
+	cd frontend && ng serve --host 0.0.0.0 --port 4200
 
 down:
-	DB_NAME=$(DB_NAME) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) docker-compose down -v
+	docker compose down --rmi all --volumes --remove-orphans
 
 build:
-	DB_NAME=$(DB_NAME) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) docker-compose build
+	docker-compose build
 
 logs:
-	DB_NAME=$(DB_NAME) DB_USER=$(DB_USER) DB_PASSWORD=$(DB_PASSWORD) docker-compose logs -f 
+	docker-compose logs -f
+
+frontend:
+	@echo "Starting frontend development server..."
+	cd frontend && ng serve --host 0.0.0.0 --port 4200 

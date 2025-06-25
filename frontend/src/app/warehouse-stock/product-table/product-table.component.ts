@@ -1,4 +1,10 @@
-import { AfterViewInit, Component, inject, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  inject,
+  ViewChild,
+  OnInit,
+} from '@angular/core';
 import { MatTable, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -36,7 +42,7 @@ import { ProductTableItem } from './product.model';
     MatSnackBarModule,
   ],
 })
-export class ProductTableComponent implements AfterViewInit {
+export class ProductTableComponent implements AfterViewInit, OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatTable) table!: MatTable<ProductTableItem>;
@@ -51,20 +57,20 @@ export class ProductTableComponent implements AfterViewInit {
     'actions',
   ];
   editingRowId: number | null = null;
-  loading = true;
+  loading = false;
   totalProducts = 0;
   private readonly dialogService = inject(DialogService);
   private readonly productTableService = inject(ProductTableService);
   private readonly snackBar = inject(MatSnackBar);
 
+  ngOnInit(): void {
+    this.dataSource.total$.subscribe(total => (this.totalProducts = total));
+  }
+
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
     this.table.dataSource = this.dataSource;
-    this.dataSource.total$.subscribe(total => (this.totalProducts = total));
-    this.dataSource.loading$.subscribe(isLoading => {
-      this.loading = isLoading;
-    });
   }
 
   getControl(productId: number, name: keyof ProductTableItem): FormControl {

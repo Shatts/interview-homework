@@ -113,21 +113,6 @@ describe('ProductTableDataSource', () => {
         done();
       });
     });
-
-    xit('should set loading state correctly', done => {
-      productTableService.getProducts.and.returnValue(of(mockProducts));
-      productTableService.initializeForms.and.stub();
-
-      dataSource.paginator = mockPaginator;
-      dataSource.sort = mockSort;
-
-      dataSource.loading$.subscribe(loading => {
-        expect(loading).toBeFalse();
-        done();
-      });
-
-      dataSource.connect().subscribe();
-    });
   });
 
   describe('disconnect()', () => {
